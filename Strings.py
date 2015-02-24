@@ -19,6 +19,8 @@ Stalemate = """<b><font size="36">Stalemate! It's a draw!<BR>It has been more th
 GameOverTitle = "Game Over"
 SubmitMoveToolTip = 'Lock in your move and end your turn.'
 PlaceHolderName = "Your Name"
-
+PlaceHolderIPEnter = "IP Address: XXX.XXX.XXX.XXX"
+SendButtonToolTip = 'Send message to who you\'re playing with'
+MessegeBoxToolTip = "Use this text box to send messages to your opponent.\nPress Enter or click Send to send the message to your opponent.\nshift+Enter is a carrige return."
 
 

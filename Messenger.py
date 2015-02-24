@@ -2,6 +2,7 @@
 from Globals import *
 import Globals
 from random import randint
+import Strings
 
 class messenger(QWidget):
     SendMessage = pyqtSignal(object,object)
@@ -68,7 +69,7 @@ class textField(QWidget):
         mainHBox.addWidget(self.TextEdit,10)
         
         sendButton = QPushButton('S\ne\nn\nd', self)
-        sendButton.setToolTip('Send message to who you\'re playing with')
+        sendButton.setToolTip(Strings.SendButtonToolTip)
         mainHBox.addWidget(sendButton, 1)
         sendButton.clicked.connect(self.SendMessage)
         
@@ -86,7 +87,7 @@ class textBox(QTextEdit):
     
     def __init__(self,parent):
         super(textBox, self).__init__(parent)
-        self.setToolTip("Use this text box to send messages to your opponent.\nPress Enter or click Send to send the message to your opponent.\nshift+Enter is a carrige return.")
+        self.setToolTip(Strings.MessegeBoxToolTip)
         
     def keyPressEvent(self,  event):
         if event.key() == Qt.Key_Return:

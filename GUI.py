@@ -284,7 +284,7 @@ class gameBoard(QWidget):
             self.CurrentTurn = self.Black_Turn
         else:
             self.CurrentTurn = self.Red_Turn
-        self.TurnLabel.setText(self.Turn_Labels[self.CurrentTurn])
+        self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn])
     
     def CheckWinLoss(self):
         Moves = {"Red":0,"Black":0}
@@ -503,7 +503,7 @@ class GetIPDialog(QDialog):
         self.NameEdit = QLineEdit(self)
         self.NameEdit.setPlaceholderText(Strings.PlaceHolderName)
         self.IPEdit = QLineEdit(self)
-        self.IPEdit.setPlaceholderText(Strings.PlaceHolder)
+        self.IPEdit.setPlaceholderText(Strings.PlaceHolderIPEnter)
         self.Label = QLabel(text)
         Grid.addWidget(self.Label,0,0,1,3)
         Grid.addWidget(self.NameEdit,1,0,1,3)
