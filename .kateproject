@@ -6,7 +6,8 @@
 	"*.ini",
 	"*.spec",
 	"*.sh",
-	"*.bat"
+	"*.bat",
+	"*.md"
       ], 
     "recursive": 1 } 
   ]

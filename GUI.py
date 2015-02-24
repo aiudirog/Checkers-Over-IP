@@ -6,6 +6,7 @@ import sys
 from random import randint
 from ServerClient import serverAndClient
 from Messenger import messenger
+import Strings
 
 class Window(QWidget):
     SendMove = pyqtSignal(object,object)
@@ -29,10 +30,10 @@ class Window(QWidget):
         
         self.setLayout(mainHBox) 
         self.setGeometry(300, 100, self.width, self.height)
-        self.setWindowTitle('IP Checkers')
+        self.setWindowTitle(Strings.Title)
         self.setWindowIcon(QIcon(os.path.join(Graphics,'Logo.png')))
         self.show()
-        self.requestText = '<font size="5">Your IP address is: {0}<BR><BR>Please share this with your partner and enter your <BR> name and your partner\'s IP address below.</font>'.format(myIP)
+        self.requestText = Strings.IPAddressRequest.format(myIP)
         Globals.Name, Globals.partnerIP = self.GetPartnerIP()
         with open(LastConnectionFile,"w") as f:
             f.write(Globals.Name+"\n"+Globals.partnerIP)
@@ -41,18 +42,18 @@ class Window(QWidget):
     def GetPartnerIP(self):
         text = ""
         while True:
-            dialog = GetIPDialog("Partner IP Address Request", self.requestText)
+            dialog = GetIPDialog(Strings.IPAddressRequestTitle, self.requestText)
             name, ip, ok = dialog.getText()
             if ip == "test":
                 return name, ip
             while ok == 0:
                 name, ip, ok = dialog.getText(text)
             if len(ip.split(".")) != 4:
-                text = "<BR><BR>ERROR: Invalid IP Address"
+                text = Strings.InvalidIPAddress
                 name, ip, ok = dialog.getText(text)
             if ok != 0:
                 if len(ip.split(".")) != 4:
-                    text = "<BR><BR>ERROR: Invalid IP Address"
+                    text = Strings.InvalidIPAddress
                     continue
             else:
                 text = ""
@@ -75,7 +76,6 @@ class gameBoard(QWidget):
     CurrentTurnSignal = pyqtSignal(object)
     Black_Turn = 0
     Red_Turn = 1
-    Turn_Labels = ['<font size="5" color="white"><b>Current Turn: Black</b></font>', '<font size="5" color="white"><b>Current Turn: Red</b></font>']
     
     def __init__(self, MainWindow):
         super(gameBoard, self).__init__()
@@ -100,7 +100,7 @@ class gameBoard(QWidget):
         submitButton.clicked.connect(self.SendMovesToServer)
         
         self.CurrentTurn = 0
-        self.TurnLabel = QLabel(self.Turn_Labels[self.CurrentTurn], self)
+        self.TurnLabel = QLabel(Strings.Turn_Labels[self.CurrentTurn], self)
         self.TurnLabel.setTextFormat(Qt.RichText)
         self.Grid.addWidget(self.TurnLabel, 9, 1, 2, 4)
         
@@ -112,6 +112,7 @@ class gameBoard(QWidget):
         self.gamePieces = pieces()
         self.refreshPieces()
         self.registerPieceSelections()
+        self.TurnsSinceLastTake = 0
         
         self.MainWindow.ExecuteMove.connect(self.executeMove)
         self.CurrentTurnSignal.connect(self.setCurrentTurn)
@@ -120,7 +121,7 @@ class gameBoard(QWidget):
     
     def setCurrentTurn(self, data):
         self.CurrentTurn = data
-        self.TurnLabel.setText(self.Turn_Labels[self.CurrentTurn])
+        self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn])
     
     def executeMove(self, submitList, piecesToRemove):
         self.SelectedMoves = []
@@ -200,6 +201,10 @@ class gameBoard(QWidget):
     def executeSelectedMoves(self, event=None):
         if len(self.SelectedMoves) < 2:
             return
+        if len(self.piecesToRemove) > 0:
+            self.TurnsSinceLastTake = 0
+        else:
+            self.TurnsSinceLastTake += 1
         for pieceToRemove in self.piecesToRemove:
             self.Grid.removeWidget(self.gamePieces.Manager[pieceToRemove[0]][pieceToRemove[1]])
             self.gamePieces.Manager[pieceToRemove[0]][pieceToRemove[1]].parent = None
@@ -316,25 +321,25 @@ class gameBoard(QWidget):
                             if x+2 <= 9 and y-2 > 0:
                                 if type(self.gamePieces.Manager[x+2][y-2]) == self.emptyBoardSpacesType:
                                     Moves[piece.color] += 1
-        if Moves["Black"] == 0 and Moves["Red"] == 0:
+        if self.TurnsSinceLastTake > 20:
             if Checkers["Black"] == Checkers["Red"]:
-                self.EndGame("""<b><font size="36">Stalemate! It's a draw.:(</font></b>""")
+                self.EndGame(Strings.Stalemate)
             elif Checkers["Black"] > Checkers["Red"]:
-                self.EndGame('<b><font size="36">Black Wins!</font></b>')
+                self.EndGame(Strings.BlackWinsStalemate)
             else:
-                self.EndGame('<b><font size="36">Red Wins!</font></b>')
+                self.EndGame(Strings.RedWinsStalemate)
         elif Moves["Red"] == 0:
-            self.EndGame('<b><font size="36">Black Wins! Red has no more moves.</font></b>')
+            self.EndGame(Strings.BlackWinsNoMoreMoves)
         elif Moves["Black"] == 0:
-            self.EndGame('<b><font size="36">Red Wins! Black has no more moves.</font></b>')
+            self.EndGame(Strings.RedWinsNoMoreMoves)
         elif Checkers["Red"] == 0:
-            self.EndGame('<b><font size="36">Black Wins!</font></b>')
+            self.EndGame(Strings.BlackWins)
         elif Checkers["Black"] == 0:
-            self.EndGame('<b><font size="36">Red Wins!</font></b>')
+            self.EndGame(Strings.RedWins)
 
     def EndGame(self, Text):
         Message = QMessageBox()
-        Message.setWindowTitle("Game Over")
+        Message.setWindowTitle(Strings.GameOverTitle)
         Message.setText(Text)
         Message.setTextFormat(Qt.RichText)
         Message.exec_()
