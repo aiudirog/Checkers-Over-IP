@@ -476,7 +476,7 @@ class SubmitMoveButton(QLabel):
         self.initUI()
     
     def initUI(self):
-        self.setToolTip('Lock in your move and end your turn.')
+        self.setToolTip(Strings.SubmitMoveToolTip)
         self.Up = QPixmap(os.path.join(Graphics,"SubmitMoveButton.png"))
         self.Down = QPixmap(os.path.join(Graphics,"SubmitMoveButtonSelected.png"))
         self.setMinimumSize(1,1)
@@ -501,9 +501,9 @@ class GetIPDialog(QDialog):
         self.text = text
         Grid = QGridLayout(self)
         self.NameEdit = QLineEdit(self)
-        self.NameEdit.setPlaceholderText("Your Name")
+        self.NameEdit.setPlaceholderText(Strings.PlaceHolderName)
         self.IPEdit = QLineEdit(self)
-        self.IPEdit.setPlaceholderText("IP Address: XXX.XXX.XXX.XXX")
+        self.IPEdit.setPlaceholderText(Strings.PlaceHolder)
         self.Label = QLabel(text)
         Grid.addWidget(self.Label,0,0,1,3)
         Grid.addWidget(self.NameEdit,1,0,1,3)

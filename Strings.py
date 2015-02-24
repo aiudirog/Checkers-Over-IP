@@ -17,6 +17,8 @@ RedWinsStalemate = '<b><font size="36">Red Wins! It has been 20 turns since the 
 BlackWinsStalemate = '<b><font size="36">Black Wins! It has been 20 turns since the last piece was taken and Black has more pieces.</font></b>'
 Stalemate = """<b><font size="36">Stalemate! It's a draw!<BR>It has been more than 20 turns since the last piece was taken and both Red and Black have the same ammount of pieces.</font></b>"""
 GameOverTitle = "Game Over"
+SubmitMoveToolTip = 'Lock in your move and end your turn.'
+PlaceHolderName = "Your Name"
 
 
 
