@@ -1,16 +1,16 @@
 # GUI.py
+
 from Globals import *
 import Globals
-import os
-import sys
-from random import randint
-from ServerClient import serverAndClient
+from ServerClient import CheckersServer, MessengerServer
 from Messenger import messenger
 import Strings
+
 
 class Window(QWidget):
     SendMove = pyqtSignal(object,object)
     ExecuteMove = pyqtSignal(object,object)
+    CannotConnectSignal = pyqtSignal()
     
     def __init__(self, screenHeight):
         super(Window, self).__init__()
@@ -19,6 +19,10 @@ class Window(QWidget):
         self.initUI()
 
     def initUI(self):
+        Globals.Signals["SendMove"] = self.SendMove
+        Globals.Signals["ExecuteMove"] = self.ExecuteMove
+        Globals.Signals["CannotConnectSignal"] = self.CannotConnectSignal
+        Globals.Signals["CannotConnectSignal"].connect(self.CannotConnect)
         mainHBox = QHBoxLayout()
         mainHBox.setContentsMargins(0,0,0,0)
         mainHBox.setSpacing(0)
@@ -34,20 +38,34 @@ class Window(QWidget):
         self.setWindowIcon(QIcon(os.path.join(Graphics,'Logo.png')))
         self.show()
         self.requestText = Strings.IPAddressRequest.format(myIP)
-        Globals.Name, Globals.partnerIP = self.GetPartnerIP()
+        name, Globals.partnerIP = self.GetPartnerIP()
+        if ":" in name:
+            Globals.Name, Globals.PartnerName = name.split(":")[:2]
+        else:
+            Globals.Name = name
         with open(LastConnectionFile,"w") as f:
             f.write(Globals.Name+"\n"+Globals.partnerIP)
-        serverAndClient(self).start()
+        CheckersServer(self).start()
+        MessengerServer(self).start()
         
     def GetPartnerIP(self):
         text = ""
+        if Globals.NoInternet:
+            title = Strings.NoInternetTitle
+            string = Strings.NoInternetText
+        else:
+            title = Strings.IPAddressRequestTitle
+            string = self.requestText
+        dialog = GetIPDialog(title, string)
+        dialog.setOffline(Globals.NoInternet)
         while True:
-            dialog = GetIPDialog(Strings.IPAddressRequestTitle, self.requestText)
             name, ip, ok = dialog.getText()
-            if ip == "test":
+            if not bool(ok):
+                qApp.closeAllWindows()
+                QApplication.quit()
+                sys.exit()
+            if ip == "test" or ip == "Server" or ip == "Offline":
                 return name, ip
-            while ok == 0:
-                name, ip, ok = dialog.getText(text)
             if len(ip.split(".")) != 4:
                 text = Strings.InvalidIPAddress
                 name, ip, ok = dialog.getText(text)
@@ -71,11 +89,17 @@ class Window(QWidget):
         self.width = new_size.width()
         self.height = new_size.height()
         self.setGeometry(self.geometry().x(), self.geometry().y(), new_size.width(), new_size.height())
+        
+    def CannotConnect(self, event=None):
+        Message = QMessageBox()
+        Message.setWindowTitle(Strings.CannotConnectTitle)
+        Message.setText(Strings.CannotConnect)
+        Message.setTextFormat(Qt.RichText)
+        Message.exec_()
+        self.close()
 
 class gameBoard(QWidget):
-    CurrentTurnSignal = pyqtSignal(object)
-    Black_Turn = 0
-    Red_Turn = 1
+    CurrentTurnSignal = pyqtSignal()
     
     def __init__(self, MainWindow):
         super(gameBoard, self).__init__()
@@ -96,13 +120,13 @@ class gameBoard(QWidget):
         self.Grid.addWidget(self.board, 0, 0, 10, 10)
         
         submitButton = SubmitMoveButton()
-        self.Grid.addWidget(submitButton, 9, 6, 1, 3)
+        self.Grid.addWidget(submitButton, 9, 7, 1, 2)
         submitButton.clicked.connect(self.SendMovesToServer)
         
         self.CurrentTurn = 0
-        self.TurnLabel = QLabel(Strings.Turn_Labels[self.CurrentTurn], self)
+        self.TurnLabel = QLabel(Strings.Turn_Labels[self.CurrentTurn].format("_____"), self)
         self.TurnLabel.setTextFormat(Qt.RichText)
-        self.Grid.addWidget(self.TurnLabel, 9, 1, 2, 4)
+        self.Grid.addWidget(self.TurnLabel, 9, 1, 2, 6)
         
         self.SelectedMoves = []
         self.piecesToRemove = []
@@ -114,14 +138,17 @@ class gameBoard(QWidget):
         self.registerPieceSelections()
         self.TurnsSinceLastTake = 0
         
-        self.MainWindow.ExecuteMove.connect(self.executeMove)
+        Globals.Signals["ExecuteMove"].connect(self.executeMove)
         self.CurrentTurnSignal.connect(self.setCurrentTurn)
+        Globals.Signals["CurrentTurnSignal"] = self.CurrentTurnSignal
         
         self.setLayout(self.Grid)
     
-    def setCurrentTurn(self, data):
-        self.CurrentTurn = data
-        self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn])
+    def setCurrentTurn(self):
+        if Globals.ColorIAm != self.CurrentTurn:
+            self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn].format(Globals.PartnerName))
+        else:
+            self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn].format(Globals.Name))
     
     def executeMove(self, submitList, piecesToRemove):
         self.SelectedMoves = []
@@ -131,8 +158,8 @@ class gameBoard(QWidget):
         self.executeSelectedMoves()
     
     def registerPieceSelections(self):
-        for y, row in enumerate(self.gamePieces.Manager):
-            for x, piece in enumerate(row):
+        for row in self.gamePieces.Manager:
+            for piece in row:
                 if piece:
                     piece.PieceSelected.connect(self.handlePieceSelection)
                 if type(piece) == self.emptyBoardSpacesType:
@@ -157,10 +184,10 @@ class gameBoard(QWidget):
         object_ = args[2]
         #Only move your piece
         if type_ == self.checkerPieceType:
-            if object_.color == "Black" and self.Red_Turn == self.CurrentTurn:
+            if object_.color == "Black" and Red_Turn == self.CurrentTurn:
                 object_.Deselect()
                 return
-            if object_.color == "Red" and self.Black_Turn == self.CurrentTurn:
+            if object_.color == "Red" and Black_Turn == self.CurrentTurn:
                 object_.Deselect()
                 return
         #If piece is deselected, remove all moves
@@ -184,7 +211,7 @@ class gameBoard(QWidget):
             #If space was deselected, remove all moves after
             if selected is False:
                 index = self.SelectedMoves.index(object_)
-                for n, space in enumerate(self.SelectedMoves[index:]):
+                for space in self.SelectedMoves[index:]:
                     space.Deselect()
                     self.SelectedMoves.pop(index)
                 return
@@ -280,11 +307,11 @@ class gameBoard(QWidget):
         self.piecesToRemove = []
     
     def ChangeTurn(self):
-        if self.CurrentTurn == self.Red_Turn:
-            self.CurrentTurn = self.Black_Turn
+        if self.CurrentTurn == Red_Turn:
+            self.CurrentTurn = Black_Turn
         else:
-            self.CurrentTurn = self.Red_Turn
-        self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn])
+            self.CurrentTurn = Red_Turn
+        self.setCurrentTurn()
     
     def CheckWinLoss(self):
         Moves = {"Red":0,"Black":0}
@@ -350,7 +377,9 @@ class gameBoard(QWidget):
         submitList = []
         for item in self.SelectedMoves:
             submitList.append((item.x,item.y))
-        self.MainWindow.SendMove.emit(submitList,self.piecesToRemove)
+        removePiecesCopy = self.piecesToRemove.copy()
+        self.executeMove(submitList,self.piecesToRemove)
+        Globals.Signals["SendMove"].emit(submitList,removePiecesCopy)
 
 class checkerPiece(QLabel):
     PieceSelected = pyqtSignal(object)
@@ -372,6 +401,18 @@ class checkerPiece(QLabel):
         self.Selected = False
     
     def mouseReleaseEvent(self, event):
+        if Globals.partnerIP == "Offline":
+            self.ChangeSelected(event)
+            return
+        #Prevent selection if it isn't your turn
+        if Globals.ColorIAm == Red_Turn and self.color != "Red":
+            return
+        if Globals.ColorIAm == Black_Turn and self.color != "Black":
+            return
+        #Select the piece
+        self.ChangeSelected(event)
+        
+    def ChangeSelected(self, event=None):
         if self.Selected:
             self.Selected = False
         else:
@@ -424,30 +465,33 @@ class emptyBoardSpaces(checkerPiece):
     
     def mouseDoubleClickEvent(self, event):
         self.SubmitMove.emit()
+    
+    def mouseReleaseEvent(self, event):
+        self.ChangeSelected(event)
             
 class pieces():
     def __init__(self):
         #Define a two dimensional list to handle piece locations
         self.Manager = []
         falseList = [False]*10
-        for n in range(10):
+        for _n in range(10):
             self.Manager.append(falseList.copy())
         #Add black pieces
         x,y = 1,1
         color = "Black"
-        for n in range(12):
+        for _n in range(12):
             self.Manager[x][y] = checkerPiece(color,x,y)
             x,y = self.increment(x,y)
         #Add red piece
         x,y = 2,6
         color = "Red"
-        for n in range(12):
+        for _n in range(12):
             self.Manager[x][y] = checkerPiece(color,x,y)
             x,y = self.increment(x,y)
         for x, row in enumerate(self.Manager):
             if x == 0 or x == 9:
                 continue
-            for y, space in enumerate(self.Manager[x]):
+            for y, space in enumerate(row):
                 if y == 0 or y == 9:
                     continue
                 if space is False:
@@ -505,14 +549,21 @@ class GetIPDialog(QDialog):
         self.IPEdit = QLineEdit(self)
         self.IPEdit.setPlaceholderText(Strings.PlaceHolderIPEnter)
         self.Label = QLabel(text)
+        self.BeServer = QCheckBox(Strings.BeServer, self)
+        self.PlayOffline = QCheckBox(Strings.PlayOffline, self)
         Grid.addWidget(self.Label,0,0,1,3)
         Grid.addWidget(self.NameEdit,1,0,1,3)
         Grid.addWidget(self.IPEdit,2,0,1,3)
+        Grid.addWidget(self.BeServer,3,0,1,2)
+        Grid.addWidget(self.PlayOffline,4,0,1,2)
+        
+        self.BeServer.stateChanged.connect(self.CheckBox)
+        self.PlayOffline.stateChanged.connect(self.Offline)
         
         Ok = QPushButton("Submit",self)
         Ok.clicked.connect(self.accept)
         
-        Grid.addWidget(Ok,3,2,1,1)
+        Grid.addWidget(Ok,5,2,1,1)
         self.setLayout(Grid)
         
         if os.path.isfile(LastConnectionFile):
@@ -520,7 +571,13 @@ class GetIPDialog(QDialog):
                 self.NameEdit.setText(f.readline()[:-1])
                 self.IPEdit.setText(f.readline())
         
-        
+    def CheckBox(self, event=None):
+        self.IPEdit.setEnabled(not self.BeServer.isChecked())
+    
+    def Offline(self, event=None):
+        self.IPEdit.setEnabled(not self.PlayOffline.isChecked())
+        self.BeServer.setEnabled(not self.PlayOffline.isChecked())
+    
     def getText(self, text=False):
         if text:
             self.Label.setText(self.text+text)
@@ -528,8 +585,16 @@ class GetIPDialog(QDialog):
             self.Label.setText(self.text)
         ok = self.exec_()
         name = self.NameEdit.text()
-        ip = self.IPEdit.text()
+        if self.PlayOffline.isChecked():
+            ip = "Offline"
+        elif self.BeServer.isChecked():
+            ip = "Server"
+        else:
+            ip = self.IPEdit.text()
         return name, ip, ok
+    
+    def setOffline(self, state):
+        self.PlayOffline.setChecked(state)
         
         
     

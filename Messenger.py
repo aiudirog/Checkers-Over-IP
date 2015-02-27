@@ -36,6 +36,7 @@ class messenger(QWidget):
         self.ScrolledArea.setWidget(self.displayMessages)
         self.ScrolledArea.setWidgetResizable(True)
         self.ScrolledArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.ScrolledArea.setStyleSheet("background-color:transparent;")
         
         self.VBox.addWidget(self.ScrolledArea,10)
         

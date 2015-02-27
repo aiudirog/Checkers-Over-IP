@@ -2,9 +2,6 @@
 from Globals import *
 import Globals
 from GUI import Window
-import sys
-
-
 
 def main():
     app = QApplication(sys.argv)
