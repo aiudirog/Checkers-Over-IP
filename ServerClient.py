@@ -80,46 +80,44 @@ class CheckersServer(QThread):
         #and who is black.
         
         ME = 0
-        turn = randint(0,1)
+        turn = 1#randint(0,1)
         if ME == turn:
             #I'm black | Server is Red
             Globals.ColorIAm = Black_Turn
             if Globals.partnerIP != "Offline": 
-                if self.SendColorToServer(Red_Turn):
-                    Globals.Signals["CurrentTurnSignal"].emit()
-                else:
+                if not self.SendColorToServer(Red_Turn):
+                    print("WRONG")
                     return
         else:
             #I'm Red | Server is Black
             Globals.ColorIAm = Red_Turn
             if Globals.partnerIP != "Offline": 
                 if self.SendColorToServer(Black_Turn):
-                    Globals.Signals["CurrentTurnSignal"].emit()
                     self.ServerFirst.emit()
                 else:
                     return
+        Globals.Signals["CurrentTurnSignal"].emit()
         self.signalReceiver.eventLoop.exec()
     
     def SendColorToServer(self,turn):
-        retry = False
-        try: 
-            Globals.PartnerName = self.client.setCurrentColorIAm(turn, Globals.Name)
-        except socket.error as error:
-            print(error)
-            retry = True
-        if retry and self.Querys < 24:
-            self.Querys += 1
-            for i in range(10):
-                stdout.flush()
-                stdout.write("\r"+Strings.Retrying+"."*i)
-                sleep(0.5)
-            print()
-            self.SendColorToServer(turn)
-        elif not retry:
-            return True
-        else:
-            Globals.Signals["CannotConnectSignal"].emit()
-            return False
+        for _n in range(24):
+            retry = False
+            try: 
+                Globals.PartnerName = self.client.setCurrentColorIAm(turn, Globals.Name)
+            except socket.error as error:
+                print(error)
+                retry = True
+            if retry:
+                for i in range(10):
+                    stdout.flush()
+                    stdout.write("\r"+Strings.Retrying+"."*i)
+                    sleep(0.5)
+                print()
+            elif not retry:
+                return True
+            else:
+                Globals.Signals["CannotConnectSignal"].emit()
+                return False
     
     def setCurrentColorIAm(self, color, name):
         Globals.ColorIAm = color
