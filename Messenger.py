@@ -124,7 +124,11 @@ class messageDisplay(QWidget):
     def addMessage(self, name, message):
         if name not in self.NamesAndColors:
             color = self.colors[randint(0,len(self.colors)-1)]
-            self.colors.remove(color)
+            if color == "blue" or color == "navy":
+                self.colors.remove("blue")
+                self.colors.remove("navy")
+            else:
+                self.colors.remove(color)
             self.NamesAndColors[name] = color
             print("{0} is {1}".format(name, color))
         msg = QLabel('<font size="4" color={2}>{0}: {1}</font>'.format(name, message, self.NamesAndColors[name]), self)
