@@ -85,17 +85,19 @@ class CheckersServer(QThread):
             #I'm black | Server is Red
             Globals.ColorIAm = Black_Turn
             if Globals.partnerIP != "Offline": 
-                if not self.SendColorToServer(Red_Turn):
+                if self.SendColorToServer(Red_Turn):
+                    Globals.Signals["CurrentTurnSignal"].emit()
+                else:
                     return
         else:
             #I'm Red | Server is Black
             Globals.ColorIAm = Red_Turn
             if Globals.partnerIP != "Offline": 
                 if self.SendColorToServer(Black_Turn):
+                    Globals.Signals["CurrentTurnSignal"].emit()
                     self.ServerFirst.emit()
                 else:
                     return
-        Globals.Signals["CurrentTurnSignal"].emit()
         self.signalReceiver.eventLoop.exec()
     
     def SendColorToServer(self,turn):
