@@ -126,9 +126,11 @@ class messageDisplay(QWidget):
             color = self.colors[randint(0,len(self.colors)-1)]
             self.colors.remove(color)
             self.NamesAndColors[name] = color
+            print("{0} is {1}".format(name, color))
         msg = QLabel('<font size="4" color={2}>{0}: {1}</font>'.format(name, message, self.NamesAndColors[name]), self)
-        msg.setWordWrap(True)
         self.mainVBox.addWidget(msg)
+        msg.setWordWrap(True)
+        
 
 
 

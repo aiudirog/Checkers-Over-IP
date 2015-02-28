@@ -227,11 +227,14 @@ class gameBoard(QWidget):
 
     def executeSelectedMoves(self, event=None):
         if len(self.SelectedMoves) < 2:
-            return
+            return False
         if len(self.piecesToRemove) > 0:
             self.TurnsSinceLastTake = 0
         else:
-            self.TurnsSinceLastTake += 1
+            if self.SelectedMoves[0].isKing:
+                self.TurnsSinceLastTake += 1
+            else:
+                self.TurnsSinceLastTake = 0
         for pieceToRemove in self.piecesToRemove:
             self.Grid.removeWidget(self.gamePieces.Manager[pieceToRemove[0]][pieceToRemove[1]])
             self.gamePieces.Manager[pieceToRemove[0]][pieceToRemove[1]].parent = None
@@ -251,6 +254,7 @@ class gameBoard(QWidget):
         self.ChangeTurn()
         
         self.CheckWinLoss()
+        return True
         
     def CheckViableMove(self, space):
         currentPosX = self.SelectedMoves[-1].x
@@ -378,8 +382,8 @@ class gameBoard(QWidget):
         for item in self.SelectedMoves:
             submitList.append((item.x,item.y))
         removePiecesCopy = self.piecesToRemove.copy()
-        self.executeMove(submitList,self.piecesToRemove)
-        Globals.Signals["SendMove"].emit(submitList,removePiecesCopy)
+        if self.executeMove(submitList,self.piecesToRemove) != False:
+            Globals.Signals["SendMove"].emit(submitList,removePiecesCopy)
 
 class checkerPiece(QLabel):
     PieceSelected = pyqtSignal(object)
