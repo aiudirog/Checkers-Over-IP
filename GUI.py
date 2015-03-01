@@ -109,9 +109,6 @@ class Window(QWidget):
 
 class gameBoard(QWidget):
     CurrentTurnSignal = pyqtSignal()
-    
-    __I = 0
-    
     def __init__(self, MainWindow):
         super(gameBoard, self).__init__()
         self.MainWindow = MainWindow
@@ -336,11 +333,6 @@ class gameBoard(QWidget):
         self.setCurrentTurn()
     
     def CheckWinLoss(self):
-        if self.__I > 5: self.EndGame(Strings.RedWins)
-        else:
-            self.__I += 1
-            return
-        
         Moves = {"Red":0,"Black":0}
         Checkers = {"Red":0,"Black":0}
         for x, row in enumerate(self.gamePieces.Manager):
@@ -433,7 +425,6 @@ class gameBoard(QWidget):
         self.setCurrentTurn()
         if Globals.Type == "Client" and self.CurrentTurn != Globals.ColorIAm:
             Globals.Signals["ServerFirst"].emit()
-        self.__I = 0
         QApplication.processEvents()
         
 class checkerPiece(QLabel):
