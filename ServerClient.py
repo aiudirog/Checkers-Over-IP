@@ -9,6 +9,7 @@ from random import randint
 import socket
 from sys import stdout
 import Strings
+import http
 
 class SignalReceiver(QObject):
     def __init__(self):
@@ -31,6 +32,8 @@ class GetMovesFromServerThread(QThread):
             Globals.Signals["ExecuteMove"].emit(ServerMoves,ServerPiecesToRemove)
         except socket.error as error: 
             print(error)
+        except http.client.CannotSendRequest as error: 
+            print("http.client.CannotSendRequest:",error)
 
 class GetMessagesFromServerThread(QThread):
     def __init__(self, parent, client):
@@ -51,7 +54,7 @@ class GetMessagesFromServerThread(QThread):
             sleep(2)
 
 class CheckersServer(QThread):
-    ServerFirst = pyqtSignal()
+    
     def __init__(self, parent):
         QThread.__init__(self, parent)
     
@@ -60,6 +63,7 @@ class CheckersServer(QThread):
         self.movesToRun = []
         self.piecesToRemove = []
         Globals.Signals["SendMove"].connect(self.sendMoves)
+        
         if Globals.partnerIP == "Server":
             Globals.Type = "Server"
             self.server = SimpleXMLRPCServer((myIP, 8000))
@@ -69,35 +73,37 @@ class CheckersServer(QThread):
             self.server.serve_forever()
         else:
             Globals.Type = "Client"
-            self.ServerFirst.connect(self.getMovesFromServer)
+            Globals.Signals["ServerFirst"].connect(self.getMovesFromServer)
             self.client = xmlrpc.client.ServerProxy('http://{0}:8000'.format(Globals.partnerIP))
             self.signalReceiver = SignalReceiver()
             self.signalReceiver.moveToThread(self)
             self.QueryServer()
             
     def QueryServer(self):
+        self.DetermineWhoIsWhatColor()
+        self.signalReceiver.eventLoop.exec()
+    
+    def DetermineWhoIsWhatColor(self):
         #Set the turn of the server and decide who is red
         #and who is black.
         
         ME = 0
-        turn = 1#randint(0,1)
+        turn = 0#randint(0,1)
         if ME == turn:
             #I'm black | Server is Red
             Globals.ColorIAm = Black_Turn
             if Globals.partnerIP != "Offline": 
                 if not self.SendColorToServer(Red_Turn):
-                    print("WRONG")
                     return
         else:
             #I'm Red | Server is Black
             Globals.ColorIAm = Red_Turn
             if Globals.partnerIP != "Offline": 
                 if self.SendColorToServer(Black_Turn):
-                    self.ServerFirst.emit()
+                    Globals.Signals["ServerFirst"].emit()
                 else:
                     return
         Globals.Signals["CurrentTurnSignal"].emit()
-        self.signalReceiver.eventLoop.exec()
     
     def SendColorToServer(self,turn):
         for _n in range(24):
@@ -106,6 +112,9 @@ class CheckersServer(QThread):
                 Globals.PartnerName = self.client.setCurrentColorIAm(turn, Globals.Name)
             except socket.error as error:
                 print(error)
+                retry = True
+            except http.client.CannotSendRequest as error:
+                print("http.client.CannotSendRequest:",error)
                 retry = True
             if retry:
                 for i in range(10):
@@ -143,8 +152,10 @@ class CheckersServer(QThread):
         self.piecesToRemove = []
         if listOfMoves != None:
             Globals.Signals["ExecuteMove"].emit(listOfMoves,piecesToRemove)
+            QApplication.processEvents()
+        sleep(2)
         while self.movesToRun == []:
-            pass
+            sleep(0.2)
         return self.movesToRun, self.piecesToRemove
 
 class MessengerServer(QThread):

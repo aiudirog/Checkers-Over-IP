@@ -5,12 +5,15 @@ import Globals
 from ServerClient import CheckersServer, MessengerServer
 from Messenger import messenger
 import Strings
+from time import sleep
 
 
 class Window(QWidget):
     SendMove = pyqtSignal(object,object)
     ExecuteMove = pyqtSignal(object,object)
     CannotConnectSignal = pyqtSignal()
+    ServerFirst = pyqtSignal()
+    RESET = pyqtSignal()
     
     def __init__(self, screenHeight):
         super(Window, self).__init__()
@@ -22,17 +25,21 @@ class Window(QWidget):
         Globals.Signals["SendMove"] = self.SendMove
         Globals.Signals["ExecuteMove"] = self.ExecuteMove
         Globals.Signals["CannotConnectSignal"] = self.CannotConnectSignal
+        Globals.Signals["ServerFirst"] = self.ServerFirst
+        Globals.Signals["RESET"] = self.RESET
+        
         Globals.Signals["CannotConnectSignal"].connect(self.CannotConnect)
-        mainHBox = QHBoxLayout()
-        mainHBox.setContentsMargins(0,0,0,0)
-        mainHBox.setSpacing(0)
+        
+        self.mainHBox = QHBoxLayout()
+        self.mainHBox.setContentsMargins(0,0,0,0)
+        self.mainHBox.setSpacing(0)
         self.gameBoard = gameBoard(self)
-        mainHBox.addWidget(self.gameBoard,2)
+        self.mainHBox.addWidget(self.gameBoard,2)
         
         self.messager = messenger()
-        mainHBox.addWidget(self.messager,1)
+        self.mainHBox.addWidget(self.messager,1)
         
-        self.setLayout(mainHBox) 
+        self.setLayout(self.mainHBox) 
         self.setGeometry(300, 100, self.width, self.height)
         self.setWindowTitle(Strings.Title)
         self.setWindowIcon(QIcon(os.path.join(Graphics,'Logo.png')))
@@ -43,9 +50,11 @@ class Window(QWidget):
             Globals.Name, Globals.PartnerName = name.split(":")[:2]
         else:
             Globals.Name = name
-        with open(LastConnectionFile,"w") as f:
-            f.write(Globals.Name+"\n"+Globals.partnerIP)
-        CheckersServer(self).start()
+        if len(Globals.partnerIP.split(".")) == 4:
+            with open(LastConnectionFile,"w") as f:
+                f.write(Globals.Name+"\n"+Globals.partnerIP)
+        self.GameServer = CheckersServer(self)
+        self.GameServer.start()
         MessengerServer(self).start()
         
     def GetPartnerIP(self):
@@ -101,6 +110,8 @@ class Window(QWidget):
 class gameBoard(QWidget):
     CurrentTurnSignal = pyqtSignal()
     
+    __I = 0
+    
     def __init__(self, MainWindow):
         super(gameBoard, self).__init__()
         self.MainWindow = MainWindow
@@ -139,6 +150,7 @@ class gameBoard(QWidget):
         self.TurnsSinceLastTake = 0
         
         Globals.Signals["ExecuteMove"].connect(self.executeMove)
+        Globals.Signals["RESET"].connect(self.RESET)
         self.CurrentTurnSignal.connect(self.setCurrentTurn)
         Globals.Signals["CurrentTurnSignal"] = self.CurrentTurnSignal
         
@@ -243,6 +255,9 @@ class gameBoard(QWidget):
             self.gamePieces.Manager[pieceToRemove[0]][pieceToRemove[1]].PieceSelected.connect(self.handlePieceSelection)
             self.gamePieces.Manager[pieceToRemove[0]][pieceToRemove[1]].SubmitMove.connect(self.SendMovesToServer)
             self.gamePieces.Manager[pieceToRemove[0]][pieceToRemove[1]].setXY(pieceToRemove[0], pieceToRemove[1])
+        
+        color = self.SelectedMoves[0].color
+        
         self.gamePieces.movePiece(self.SelectedMoves[0].x, self.SelectedMoves[0].y, self.SelectedMoves[-1].x, self.SelectedMoves[-1].y)
         if self.SelectedMoves[0].y == 1 and self.SelectedMoves[0].color == "Red":
             self.SelectedMoves[0].setKing()
@@ -252,8 +267,11 @@ class gameBoard(QWidget):
         self.ResetSelectedMoves()
         
         self.ChangeTurn()
-        
-        self.CheckWinLoss()
+        #Check win/loss only if this call came from the opponent
+        if Globals.ColorIAm == Red_Turn and color != "Red":
+            self.CheckWinLoss()
+        if Globals.ColorIAm == Black_Turn and color != "Black":
+            self.CheckWinLoss()
         return True
         
     def CheckViableMove(self, space):
@@ -318,6 +336,11 @@ class gameBoard(QWidget):
         self.setCurrentTurn()
     
     def CheckWinLoss(self):
+        if self.__I > 5: self.EndGame(Strings.RedWins)
+        else:
+            self.__I += 1
+            return
+        
         Moves = {"Red":0,"Black":0}
         Checkers = {"Red":0,"Black":0}
         for x, row in enumerate(self.gamePieces.Manager):
@@ -369,11 +392,15 @@ class gameBoard(QWidget):
             self.EndGame(Strings.RedWins)
 
     def EndGame(self, Text):
-        Message = QMessageBox()
+        Message = QMessageBox(self.MainWindow)
         Message.setWindowTitle(Strings.GameOverTitle)
         Message.setText(Text)
         Message.setTextFormat(Qt.RichText)
-        Message.exec_()
+        Message.setWindowModality(Qt.NonModal)
+        Message.setModal(False)
+        Message.show()
+        QApplication.processEvents()
+        Globals.Signals["RESET"].emit()
         
     def SendMovesToServer(self, event=None):
         if len(self.SelectedMoves) < 2:
@@ -384,7 +411,31 @@ class gameBoard(QWidget):
         removePiecesCopy = self.piecesToRemove.copy()
         if self.executeMove(submitList,self.piecesToRemove) != False:
             Globals.Signals["SendMove"].emit(submitList,removePiecesCopy)
-
+        self.CheckWinLoss()
+        
+    def RESET(self):
+        sleep(3)
+        for row in self.gamePieces.Manager:
+            for piece in row:
+                if piece:
+                    self.Grid.removeWidget(piece)
+                    piece.parent = None
+                    piece.deleteLater()
+                    del piece
+        self.SelectedMoves = []
+        self.piecesToRemove = []
+        self.gamePieces = pieces()
+        self.refreshPieces()
+        self.registerPieceSelections()
+        self.TurnsSinceLastTake = 0
+        Globals.ColorIAm = int(not Globals.ColorIAm)
+        self.CurrentTurn = 0
+        self.setCurrentTurn()
+        if Globals.Type == "Client" and self.CurrentTurn != Globals.ColorIAm:
+            Globals.Signals["ServerFirst"].emit()
+        self.__I = 0
+        QApplication.processEvents()
+        
 class checkerPiece(QLabel):
     PieceSelected = pyqtSignal(object)
 

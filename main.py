@@ -2,6 +2,8 @@
 from Globals import *
 import Globals
 from GUI import Window
+import signal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 def main():
     app = QApplication(sys.argv)
