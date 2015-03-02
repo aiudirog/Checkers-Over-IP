@@ -36,4 +36,4 @@ setlocal & pushd .
 mkdir "C:\Program Files\Checkers-Over-IP"
 git clone https://github.com/aiudirog/Checkers-Over-IP.git "C:\Program Files\Checkers-Over-IP"
 mkdir "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Checkers Over IP"
-:xcopy /s c:\source d:\target
+xcopy /s "C:\Program Files\Checkers-Over-IP\Checkers Over IP.lnk" "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Checkers Over IP\Checkers Over IP.lnk"
