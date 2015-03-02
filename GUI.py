@@ -42,7 +42,7 @@ class Window(QWidget):
         self.setLayout(self.mainHBox) 
         self.setGeometry(300, 100, self.width, self.height)
         self.setWindowTitle(Strings.Title)
-        self.setWindowIcon(QIcon(os.path.join(Graphics,'Logo.png')))
+        self.setWindowIcon(Globals.AppIcon)
         self.show()
         self.requestText = Strings.IPAddressRequest.format(myIP)
         name, Globals.partnerIP = self.GetPartnerIP()

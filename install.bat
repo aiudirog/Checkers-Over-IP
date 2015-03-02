@@ -1,0 +1,39 @@
+:::::::::::::::::::::::::::::::::::::::::
+:: Automatically check & get admin rights
+:::::::::::::::::::::::::::::::::::::::::
+@echo off
+CLS
+ECHO.
+ECHO =============================
+ECHO Running Admin shell
+ECHO =============================
+
+:checkPrivileges
+NET FILE 1>NUL 2>NUL
+if '%errorlevel%' == '0' ( goto gotPrivileges ) else ( goto getPrivileges )
+
+:getPrivileges
+if '%1'=='ELEV' (shift & goto gotPrivileges)
+ECHO.
+ECHO **************************************
+ECHO Invoking UAC for Privilege Escalation
+ECHO **************************************
+
+setlocal DisableDelayedExpansion
+set "batchPath=%~0"
+setlocal EnableDelayedExpansion
+ECHO Set UAC = CreateObject^("Shell.Application"^) > "%temp%\OEgetPrivileges.vbs"
+ECHO UAC.ShellExecute "!batchPath!", "ELEV", "", "runas", 1 >> "%temp%\OEgetPrivileges.vbs"
+"%temp%\OEgetPrivileges.vbs"
+exit /B
+
+:gotPrivileges
+::::::::::::::::::::::::::::
+::START
+::::::::::::::::::::::::::::
+setlocal & pushd .
+
+mkdir "C:\Program Files\Checkers-Over-IP"
+git clone https://github.com/aiudirog/Checkers-Over-IP.git "C:\Program Files\Checkers-Over-IP"
+mkdir "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Checkers Over IP"
+:xcopy /s c:\source d:\target

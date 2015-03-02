@@ -21,4 +21,5 @@ Black_Turn = 0
 Red_Turn = 1
 Type = None
 ColorIAm = None
+AppIcon = None
 
