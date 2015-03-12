@@ -12,6 +12,12 @@ if '%COUNT%' == '0' ( goto runWithoutPull) else ( goto runWithPull)
 CLS
 ECHO.
 ECHO =============================
+ECHO There are updates for your checkers game.:) Click yes to update.
+ECHO =============================
+ping 1.1.1.1 -n 1 -w 3000 > nul
+
+ECHO.
+ECHO =============================
 ECHO Running Admin shell
 ECHO =============================
 
