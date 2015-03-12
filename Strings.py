@@ -13,9 +13,9 @@ RedWins = '<b><font size="36">Red Wins!</font></b>'
 BlackWins = '<b><font size="36">Black Wins!</font></b>'
 RedWinsNoMoreMoves = '<b><font size="36">Red Wins! Black has no more moves.</font></b>'
 BlackWinsNoMoreMoves = '<b><font size="36">Black Wins! Red has no more moves.</font></b>'
-RedWinsStalemate = '<b><font size="36">Red Wins! It has been 30 turns since the last piece was taken and Red has more pieces.</font></b>'
-BlackWinsStalemate = '<b><font size="36">Black Wins! It has been 30 turns since the last piece was taken and Black has more pieces.</font></b>'
-Stalemate = """<b><font size="36">Stalemate! It's a draw!<BR>It has been than 30 turns since the last piece was taken and both Red and Black have the same ammount of pieces.</font></b>"""
+RedWinsStalemate = '<b><font size="36">Red Wins! It has been {0} turns since the last piece was taken and Red has more pieces.</font></b>'
+BlackWinsStalemate = '<b><font size="36">Black Wins! It has been {0} turns since the last piece was taken and Black has more pieces.</font></b>'
+Stalemate = """<b><font size="36">Stalemate! It's a draw!<BR>It has been than {0} turns since the last piece was taken and both Red and Black have the same ammount of pieces.</font></b>"""
 GameOverTitle = "Game Over"
 SubmitMoveToolTip = 'Lock in your move and end your turn.'
 PlaceHolderName = "Your Name"
