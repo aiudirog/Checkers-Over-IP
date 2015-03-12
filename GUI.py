@@ -367,13 +367,13 @@ class gameBoard(QWidget):
                             if x+2 <= 9 and y-2 > 0:
                                 if type(self.gamePieces.Manager[x+2][y-2]) == self.emptyBoardSpacesType:
                                     Moves[piece.color] += 1
-        if self.TurnsSinceLastTake > 20:
+        if self.TurnsSinceLastTake > 40:
             if Checkers["Black"] == Checkers["Red"]:
-                self.EndGame(Strings.Stalemate)
+                self.EndGame(Strings.Stalemate.format(self.TurnsSinceLastTake))
             elif Checkers["Black"] > Checkers["Red"]:
-                self.EndGame(Strings.BlackWinsStalemate)
+                self.EndGame(Strings.BlackWinsStalemate.format(self.TurnsSinceLastTake))
             else:
-                self.EndGame(Strings.RedWinsStalemate)
+                self.EndGame(Strings.RedWinsStalemate.format(self.TurnsSinceLastTake))
         elif Moves["Red"] == 0:
             self.EndGame(Strings.BlackWinsNoMoreMoves)
         elif Moves["Black"] == 0:
