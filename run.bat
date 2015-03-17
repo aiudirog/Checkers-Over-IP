@@ -6,7 +6,6 @@ ECHO Checking for differences....
 set COUNT=
 for /f %%a in ('git diff --numstat HEAD origin/master') do set COUNT=%%a
 if '%COUNT%' == '' (echo No need to pull) else (echo Update needed)
-TIMEOUT /T 15
 if '%COUNT%' == '' (goto runWithoutPull) else (goto runWithPull)
 
 :runWithPull
@@ -23,6 +22,8 @@ ECHO.
 ECHO =============================
 ECHO Running Admin shell
 ECHO =============================
+
+timeout /T 5
 
 :checkPrivileges
 NET FILE 1>NUL 2>NUL
