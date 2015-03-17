@@ -4,7 +4,7 @@ set COUNT=
 for /f "delims=" %%a in ('git fetch --dry-run') do @set COUNT=%%a
 ECHO %COUNT%
 timeout /T 5
-if '%COUNT%' == '' (goto runWithoutPull) else (goto runWithPull)
+if '%COUNT%' == '' (goto runWithPull) else (goto runWithoutPull)
 
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
