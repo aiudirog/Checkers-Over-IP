@@ -1,8 +1,10 @@
 @echo off
 chdir /d "C:\Program Files\Checkers-Over-IP"
+git pull
 set COUNT=
 for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
 ECHO %COUNT%
+timeout /T 10
 if '%COUNT%' == '0' ( goto runWithoutPull) else ( goto runWithPull)
 
 :runWithPull
@@ -14,7 +16,7 @@ ECHO.
 ECHO =============================
 ECHO There are updates for your checkers game.:) Click yes to update.
 ECHO =============================
-ping 1.1.1.1 -n 1 -w 3000 > nul
+timeout /T 3
 
 ECHO.
 ECHO =============================
