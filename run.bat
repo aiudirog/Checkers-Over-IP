@@ -4,12 +4,12 @@ ECHO Updating local repo....
 git fetch
 ECHO Checking for differences....
 git rev-list HEAD...origin/master --count
-:for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
-for /f "delims=" %%a in ('git diff HEAD origin/master --count') do @set COUNT=%%a
-ECHO %COUNT%
+for /f "delims=" %%a in ('git diff HEAD origin/master --numstats') do @set COUNT=%%a
+set _count_ = %COUNT:~0,1%
+ECHO %_count_%
 
 timeout /T 15
-if '%COUNT%' == '0' (goto runWithoutPull) else (goto runWithPull)
+if '%_count_%' == '0' (goto runWithoutPull) else (goto runWithPull)
 
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
