@@ -8,8 +8,10 @@ for /f "delims=" %%a in ('git diff --numstat HEAD origin/master') do @set COUNT=
 set _count_ = %COUNT:~0,1%
 ECHO "%_count_%"
 
+if '%_count_%' == '' (echo No need to pull) else (echo Update needed)
 timeout /T 15
-if '%_count_%' == '0' (goto runWithoutPull) else (goto runWithPull)
+
+if '%_count_%' == '' (goto runWithoutPull) else (goto runWithPull)
 
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
