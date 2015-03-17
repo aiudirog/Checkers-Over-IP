@@ -3,7 +3,7 @@ chdir /d "C:\Program Files\Checkers-Over-IP"
 set COUNT=
 for /f "delims=" %%a in ('git fetch --dry-run') do @set COUNT=%%a
 ECHO %COUNT%
-timeout /T 5
+timeout /T 3
 if '%COUNT%' == '' (goto runWithPull) else (goto runWithoutPull)
 
 :runWithPull
