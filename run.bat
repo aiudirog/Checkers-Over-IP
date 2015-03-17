@@ -3,6 +3,7 @@ chdir /d "C:\Program Files\Checkers-Over-IP"
 ECHO Updating local repo....
 git fetch
 ECHO Checking for differences....
+git rev-list HEAD...origin/master --count
 for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
 ECHO %COUNT%
 
