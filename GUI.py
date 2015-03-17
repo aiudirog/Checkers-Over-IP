@@ -17,7 +17,9 @@ class Window(QWidget):
     
     def __init__(self, screenHeight):
         super(Window, self).__init__()
-        self.width, self.height = 900, 600
+        self.height = int(screenHeight*0.80)
+        self.width = int(screenHeight*0.80*(3/2))
+        print("Height: {}\nWidth: {}".format(self.height,self.width))
         self.screenHeight = screenHeight
         self.initUI()
 
