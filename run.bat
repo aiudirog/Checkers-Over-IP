@@ -3,6 +3,7 @@ chdir /d "C:\Program Files\Checkers-Over-IP"
 ECHO Updating local repo....
 git fetch
 ECHO Checking for differences....
+
 set COUNT=
 for /f "delims=&" %%a in ('git diff --numstat HEAD origin/master') do @set COUNT=%%a
 if '%COUNT%' == '' (echo No need to pull) else (echo Update needed)
