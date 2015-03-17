@@ -5,7 +5,7 @@ git fetch
 ECHO Checking for differences....
 git rev-list HEAD...origin/master --count
 :for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
-for /f "delims=" %%a in ('git diff HEAD origin/master') do @set COUNT=%%a
+for /f "delims=" %%a in ('git diff HEAD origin/master --count') do @set COUNT=%%a
 ECHO %COUNT%
 
 timeout /T 15
