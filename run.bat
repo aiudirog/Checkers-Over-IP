@@ -1,11 +1,10 @@
 @echo off
 chdir /d "C:\Program Files\Checkers-Over-IP"
-git pull
 set COUNT=
 for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
 ECHO %COUNT%
 timeout /T 10
-if '%COUNT%' == '0' ( goto runWithoutPull) else ( goto runWithPull)
+if '%COUNT%' == '0' (goto runWithoutPull) else (goto runWithPull)
 
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
