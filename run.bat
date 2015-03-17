@@ -6,7 +6,7 @@ ECHO Checking for differences....
 for /f "delims=" %%a in ('git diff --numstat HEAD origin/master') do @set COUNT=%%a
 set _count_ = %COUNT:~0,2%
 ECHO %COUNT%
-ECHO '%_count_%'
+ECHO %_count_%
 if '%_count_%' == '' (echo No need to pull) else (echo Update needed)
 TIMEOUT /T 15
 if '%_count_%' == '' (goto runWithoutPull) else (goto runWithPull)
