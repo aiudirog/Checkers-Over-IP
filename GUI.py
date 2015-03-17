@@ -20,6 +20,7 @@ class Window(QWidget):
         self.height = int(screenHeight*0.80)
         self.width = int(screenHeight*0.80*(3/2))
         print("Height: {}\nWidth: {}".format(self.height,self.width))
+        
         self.screenHeight = screenHeight
         self.initUI()
 
