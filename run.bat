@@ -9,6 +9,7 @@ if '%COUNT%' == '' (echo No need to pull) else (echo Update needed)
 TIMEOUT /T 15
 if '%COUNT%' == '' (goto runWithoutPull) else (goto runWithPull)
 
+
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
 :: Automatically check & get admin rights
