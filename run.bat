@@ -1,10 +1,11 @@
 @echo off
 chdir /d "C:\Program Files\Checkers-Over-IP"
+git fetch
 set COUNT=
-for /f "delims=" %%a in ('git fetch --dry-run') do @set COUNT=%%a
+for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
 ECHO %COUNT%
 timeout /T 3
-if '%COUNT%' == '' (goto runWithPull) else (goto runWithoutPull)
+if '%COUNT%' == '' (goto runWithoutPull) else (goto runWithPull)
 
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
