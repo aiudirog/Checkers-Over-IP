@@ -5,7 +5,6 @@ git fetch
 ECHO Checking for differences....
 set COUNT=
 for /f "delims=" %%a in ('git diff --numstat HEAD origin/master') do @set COUNT=%%a
-set COUNT
 set _count_=%COUNT:~0,1%
 ECHO %COUNT%
 ECHO %_count_%
