@@ -51,6 +51,8 @@ class Window(QWidget):
         else:
             Globals.Name = name
         if len(Globals.partnerIP.split(".")) == 4:
+            if not os.path.isdir(Globals.basePath):
+                os.makedirs(Globals.basePath)
             with open(LastConnectionFile,"w") as f:
                 f.write(Globals.Name+"\n"+Globals.partnerIP)
         self.GameServer = CheckersServer(self)
