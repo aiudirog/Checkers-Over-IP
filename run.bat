@@ -1,10 +1,10 @@
 @echo off
 chdir /d "C:\Program Files\Checkers-Over-IP"
 set COUNT=
-for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
+for /f "delims=" %%a in ('git fetch --dry-run') do @set COUNT=%%a
 ECHO %COUNT%
 timeout /T 5
-if '%COUNT%' == '0' (goto runWithoutPull) else (goto runWithPull)
+if '%COUNT%' == '' (goto runWithoutPull) else (goto runWithPull)
 
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
@@ -15,7 +15,6 @@ ECHO.
 ECHO =============================
 ECHO There are updates for your checkers game.:) Click yes to update.
 ECHO =============================
-timeout /T 3
 
 ECHO.
 ECHO =============================
