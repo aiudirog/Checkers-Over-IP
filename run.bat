@@ -5,7 +5,7 @@ set COUNT=
 for /f "delims=" %%a in ('git rev-list HEAD...origin/master --count') do @set COUNT=%%a
 ECHO %COUNT%
 timeout /T 3
-if '%COUNT%' == '' (goto runWithoutPull) else (goto runWithPull)
+if '%COUNT%' == '0' (goto runWithoutPull) else (goto runWithPull)
 
 :runWithPull
 :::::::::::::::::::::::::::::::::::::::::
