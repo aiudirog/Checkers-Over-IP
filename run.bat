@@ -1,4 +1,4 @@
-:@echo off
+@echo off
 chdir /d "C:\Program Files\Checkers-Over-IP"
 ECHO Updating local repo....
 git fetch
