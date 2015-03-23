@@ -14,7 +14,8 @@ class Window(QWidget):
     CannotConnectSignal = pyqtSignal()
     ServerFirst = pyqtSignal()
     RESET = pyqtSignal()
-    
+    DeselectAllPieces = pyqtSignal()
+
     def __init__(self, screenHeight):
         super(Window, self).__init__()
         self.height = int(screenHeight*0.80)
@@ -30,7 +31,7 @@ class Window(QWidget):
         Globals.Signals["CannotConnectSignal"] = self.CannotConnectSignal
         Globals.Signals["ServerFirst"] = self.ServerFirst
         Globals.Signals["RESET"] = self.RESET
-        
+        Globals.Signals["DeselectAllPieces"] = self.DeselectAllPieces
         Globals.Signals["CannotConnectSignal"].connect(self.CannotConnect)
         
         self.mainHBox = QHBoxLayout()
@@ -117,6 +118,7 @@ class gameBoard(QWidget):
     def __init__(self, MainWindow):
         super(gameBoard, self).__init__()
         self.MainWindow = MainWindow
+        self.yourTurn = yourTurnDialog(self.parent())
         self.initUI()
         
     def initUI(self):
@@ -163,7 +165,9 @@ class gameBoard(QWidget):
             self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn].format(Globals.PartnerName))
         else:
             self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn].format(Globals.Name))
-    
+            #if Globals.partnerIP != "Offline":
+            self.yourTurn.show()
+
     def executeMove(self, submitList, piecesToRemove):
         self.SelectedMoves = []
         for item in submitList:
@@ -349,26 +353,26 @@ class gameBoard(QWidget):
                     if piece.isKing or piece.color == "Black":
                         if type(self.gamePieces.Manager[x+1][y+1]) == self.emptyBoardSpacesType:
                             Moves[piece.color] += 1
-                        elif self.gamePieces.Manager[x+1][y+1] != False:
+                        elif self.gamePieces.Manager[x+1][y+1]:
                             if x+2 <= 9:
                                 if type(self.gamePieces.Manager[x+2][y+2]) == self.emptyBoardSpacesType:
                                     Moves[piece.color]+=1
                         if type(self.gamePieces.Manager[x-1][y+1]) == self.emptyBoardSpacesType:
                             Moves[piece.color] += 1
-                        elif self.gamePieces.Manager[x-1][y+1] != False:
+                        elif self.gamePieces.Manager[x-1][y+1]:
                             if x-2 > 0 and y+2 <= 9:
                                 if type(self.gamePieces.Manager[x-2][y+2]) == self.emptyBoardSpacesType:
                                     Moves[piece.color] += 1
                     if piece.isKing or piece.color == "Red":
                         if type(self.gamePieces.Manager[x-1][y-1]) == self.emptyBoardSpacesType:
                             Moves[piece.color] += 1
-                        elif self.gamePieces.Manager[x-1][y-1] != False:
+                        elif self.gamePieces.Manager[x-1][y-1]:
                             if x-2 > 0:
                                 if type(self.gamePieces.Manager[x-2][y-2]) == self.emptyBoardSpacesType:
                                     Moves[piece.color]+=1
                         if type(self.gamePieces.Manager[x+1][y-1]) == self.emptyBoardSpacesType:
                             Moves[piece.color] += 1
-                        elif self.gamePieces.Manager[x+1][y-1] != False:
+                        elif self.gamePieces.Manager[x+1][y-1]:
                             if x+2 <= 9 and y-2 > 0:
                                 if type(self.gamePieces.Manager[x+2][y-2]) == self.emptyBoardSpacesType:
                                     Moves[piece.color] += 1
@@ -450,6 +454,8 @@ class checkerPiece(QLabel):
         self.setPixmap(self.UnselectedPixmap)
         
         self.Selected = False
+
+        Globals.Signals["DeselectAllPieces"].connect(self.Deselect)
     
     def mouseReleaseEvent(self, event):
         if Globals.partnerIP == "Offline":
@@ -646,10 +652,36 @@ class GetIPDialog(QDialog):
     
     def setOffline(self, state):
         self.PlayOffline.setChecked(state)
-        
-        
-    
 
+class yourTurnDialog(QDialog):
+    def __init__(self, parent):
+        super(yourTurnDialog, self).__init__(parent=parent,flags=Qt.FramelessWindowHint)
+        self.needHide = False
+        self.setBackgroundRole(QPalette.Base)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        mainLayout = QVBoxLayout()
+
+        yourTurnPixmap = QPixmap(os.path.join(Graphics,"Your_Turn.png"))
+        label = QLabel()
+        label.setPixmap(yourTurnPixmap)
+
+        mainLayout.addWidget(label)
+        self.setLayout(mainLayout)
+        self.setWindowModality(Qt.NonModal)
+
+    def show(self, *args, **kwargs):
+        super(yourTurnDialog, self).show(*args, **kwargs)
+        for i in range(15):
+            QApplication.processEvents()
+            sleep(0.1)
+            if self.needHide:
+                self.needHide = False
+                self.hide()
+                return
+        self.hide()
+
+    def mousePressEvent(self, event=None):
+        self.needHide = True
 
 
 
