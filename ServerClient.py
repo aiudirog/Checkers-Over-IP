@@ -88,7 +88,7 @@ class CheckersServer(QThread):
         #and who is black.
         
         ME = 0
-        turn = 0#randint(0,1)
+        turn = randint(0,1)
         if ME == turn:
             #I'm black | Server is Red
             Globals.ColorIAm = Black_Turn
