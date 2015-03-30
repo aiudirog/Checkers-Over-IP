@@ -27,4 +27,5 @@ Red_Turn = 1
 Type = None
 ColorIAm = None
 AppIcon = None
+PiecePixmaps = None
 

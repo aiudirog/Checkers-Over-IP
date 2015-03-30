@@ -142,13 +142,79 @@ class gameBoard(QWidget):
         self.TurnLabel = QLabel(Strings.Turn_Labels[self.CurrentTurn].format("_____"), self)
         self.TurnLabel.setTextFormat(Qt.RichText)
         self.Grid.addWidget(self.TurnLabel, 9, 1, 2, 6)
-        
+
+        #Setup Images for the pieces:
+
+        selected = QPixmap(os.path.join(Graphics,"clear_Selected.png"))
+        lastSelected = QPixmap(os.path.join(Graphics,"Last_Move.png"))
+        crown = QPixmap(os.path.join(Graphics,"Crown.png"))
+        clear = QPixmap(os.path.join(Graphics,"clear.png"))
+
+        blackUnselectedPixmap = QPixmap(os.path.join(Graphics,"Black_Piece.png"))
+        redUnselectedPixmap = QPixmap(os.path.join(Graphics,"Red_Piece.png"))
+        blackSelectedPixmap = QPixmap(os.path.join(Graphics,"Black_Piece.png"))
+        redSelectedPixmap = QPixmap(os.path.join(Graphics,"Red_Piece.png"))
+        blackLastSelectedPixmap = QPixmap(os.path.join(Graphics,"Black_Piece.png"))
+        redLastSelectedPixmap = QPixmap(os.path.join(Graphics,"Red_Piece.png"))
+
+        painter = QPainter(blackSelectedPixmap)
+        painter.drawPixmap(0,0,selected)
+        painter = QPainter(redSelectedPixmap)
+        painter.drawPixmap(0,0,selected)
+        painter = QPainter(blackLastSelectedPixmap)
+        painter.drawPixmap(0,0,lastSelected)
+        painter = QPainter(redLastSelectedPixmap)
+        painter.drawPixmap(0,0,lastSelected)
+
+        blackKingUnselectedPixmap = QPixmap(os.path.join(Graphics,"Black_Piece.png"))
+        redKingUnselectedPixmap = QPixmap(os.path.join(Graphics,"Red_Piece.png"))
+        blackKingSelectedPixmap = QPixmap(os.path.join(Graphics,"Black_Piece.png"))
+        redKingSelectedPixmap = QPixmap(os.path.join(Graphics,"Red_Piece.png"))
+        blackKingLastSelectedPixmap = QPixmap(os.path.join(Graphics,"Black_Piece.png"))
+        redKingLastSelectedPixmap = QPixmap(os.path.join(Graphics,"Red_Piece.png"))
+        painter = QPainter(blackKingUnselectedPixmap)
+        painter.drawPixmap(0,0,crown)
+        painter = QPainter(redKingUnselectedPixmap)
+        painter.drawPixmap(0,0,crown)
+
+        painter = QPainter(blackKingSelectedPixmap)
+        painter.drawPixmap(0,0,selected)
+        painter.drawPixmap(0,0,crown)
+        painter = QPainter(redKingSelectedPixmap)
+        painter.drawPixmap(0,0,selected)
+        painter.drawPixmap(0,0,crown)
+
+        painter = QPainter(blackKingLastSelectedPixmap)
+        painter.drawPixmap(0,0,lastSelected)
+        painter.drawPixmap(0,0,crown)
+        painter = QPainter(redKingLastSelectedPixmap)
+        painter.drawPixmap(0,0,lastSelected)
+        painter.drawPixmap(0,0,crown)
+
+        Globals.PiecePixmaps = {
+            'BlackUnselectedPixmap':blackUnselectedPixmap,
+            'RedUnselectedPixmap':redUnselectedPixmap,
+            'BlackSelectedPixmap':blackSelectedPixmap,
+            'RedSelectedPixmap':redSelectedPixmap,
+            'BlackKingUnselectedPixmap':blackKingUnselectedPixmap,
+            'RedKingUnselectedPixmap':redKingUnselectedPixmap,
+            'BlackKingSelectedPixmap':blackKingSelectedPixmap,
+            'RedKingSelectedPixmap':redKingSelectedPixmap,
+            'SelectedPixmap':selected,
+            'UnselectedPixmap':clear,
+            'BlackLastSelectedPixmap':blackLastSelectedPixmap,
+            'RedLastSelectedPixmap':redLastSelectedPixmap,
+            'BlackKingLastSelectedPixmap':blackKingLastSelectedPixmap,
+            'RedKingLastSelectedPixmap':redKingLastSelectedPixmap
+            }
+
         self.SelectedMoves = []
         self.piecesToRemove = []
         self.emptyBoardSpacesType = type(emptyBoardSpaces())
         self.checkerPieceType = type(checkerPiece())
-        
+
         self.gamePieces = pieces()
+        self.lastPiece = None
         self.refreshPieces()
         self.registerPieceSelections()
         self.TurnsSinceLastTake = 0
@@ -165,8 +231,7 @@ class gameBoard(QWidget):
             self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn].format(Globals.PartnerName))
         else:
             self.TurnLabel.setText(Strings.Turn_Labels[self.CurrentTurn].format(Globals.Name))
-            #if Globals.partnerIP != "Offline":
-            self.yourTurn.show()
+            if Globals.partnerIP != "Offline": self.yourTurn.show()
 
     def executeMove(self, submitList, piecesToRemove):
         self.SelectedMoves = []
@@ -244,6 +309,7 @@ class gameBoard(QWidget):
                 self.piecesToRemove.append(removePiece)
 
     def executeSelectedMoves(self, event=None):
+        if hasattr(self.lastPiece, 'Deselect'): self.lastPiece.Deselect()
         if len(self.SelectedMoves) < 2:
             return False
         if len(self.piecesToRemove) > 0:
@@ -270,7 +336,10 @@ class gameBoard(QWidget):
         elif self.SelectedMoves[0].y == 8 and self.SelectedMoves[0].color == "Black":
             self.SelectedMoves[0].setKing()
         self.refreshPieces()
+        #Save reference to last piece
+        self.lastPiece = self.SelectedMoves[0]
         self.ResetSelectedMoves()
+        self.lastPiece.setLastSelected()
         
         self.ChangeTurn()
         #Check win/loss only if this call came from the opponent
@@ -376,7 +445,7 @@ class gameBoard(QWidget):
                             if x+2 <= 9 and y-2 > 0:
                                 if type(self.gamePieces.Manager[x+2][y-2]) == self.emptyBoardSpacesType:
                                     Moves[piece.color] += 1
-        if self.TurnsSinceLastTake > 40:
+        if self.TurnsSinceLastTake > 59:
             if Checkers["Black"] == Checkers["Red"]:
                 self.EndGame(Strings.Stalemate.format(self.TurnsSinceLastTake))
             elif Checkers["Black"] > Checkers["Red"]:
@@ -444,19 +513,22 @@ class checkerPiece(QLabel):
         self.x = x
         self.y = y
         self.isKing = False
-        #Get path to image for piece
-        self.UnselectedPixmap = QPixmap(os.path.join(Graphics,"{0}_Piece.png".format(color)))
-        self.SelectedPixmap = QPixmap(os.path.join(Graphics,"{0}_Piece_Selected.png".format(color)))
+        self.KingText = ''
+        self.Selected = False
+        self.SelectedText = 'Unselected'
         #Save color
         self.color = color
+        if color == None:
+            color = ''
         self.setMinimumSize(1,1)
         self.setScaledContents(True)
-        self.setPixmap(self.UnselectedPixmap)
-        
-        self.Selected = False
+        self.setPixmap(Globals.PiecePixmaps['{}{}{}Pixmap'.format(color,self.KingText,self.SelectedText)])
 
         Globals.Signals["DeselectAllPieces"].connect(self.Deselect)
-    
+
+    def setLastSelected(self, event=None):
+        self.setPixmap(Globals.PiecePixmaps['{}{}LastSelectedPixmap'.format(self.color,self.KingText)])
+
     def mouseReleaseEvent(self, event):
         if Globals.partnerIP == "Offline":
             self.ChangeSelected(event)
@@ -472,24 +544,26 @@ class checkerPiece(QLabel):
     def ChangeSelected(self, event=None):
         if self.Selected:
             self.Selected = False
+            self.SelectedText = 'Unselected'
         else:
+            self.SelectedText = 'Selected'
             self.Selected = True
+
         self.ChangeImageOnClick(event)
     
     def ChangeImageOnClick(self, event):
-        if self.Selected:
-            self.setPixmap(self.SelectedPixmap)
-        else:
-            self.setPixmap(self.UnselectedPixmap)
+        self.setPixmap(Globals.PiecePixmaps['{}{}{}Pixmap'.format(self.color,self.KingText,self.SelectedText)])
         if event != None:
             self.PieceSelected.emit((self.Selected, type(self), self))
     
     def Deselect(self):
         self.Selected = False
+        self.SelectedText = 'Unselected'
         self.ChangeImageOnClick(None)
         
     def Select(self):
         self.Selected = True
+        self.SelectedText = 'Selected'
         self.ChangeImageOnClick(None)
     
     def setXY(self, x, y):
@@ -498,8 +572,7 @@ class checkerPiece(QLabel):
         
     def setKing(self):
         self.isKing = True
-        self.UnselectedPixmap = QPixmap(os.path.join(Graphics,"{0}_Piece_King.png".format(self.color)))
-        self.SelectedPixmap = QPixmap(os.path.join(Graphics,"{0}_Piece_Selected_King.png".format(self.color)))
+        self.KingText = 'King'
         self.ChangeImageOnClick(None)
         
 class emptyBoardSpaces(checkerPiece):
@@ -507,24 +580,26 @@ class emptyBoardSpaces(checkerPiece):
     
     def __init__(self, x=1, y=2):
         super(emptyBoardSpaces, self).__init__(color=None, x=x, y=y)
-        #Get path to image for piece
-        self.UnselectedPixmap = QPixmap(os.path.join(Graphics,"clear.png"))
-        self.SelectedPixmap = QPixmap(os.path.join(Graphics,"clear_Selected.png"))
         #Build the widget that will be displayed
+
+        self.Selected = False
+        self.SelectedText = 'Unselected'
+
         self.setMinimumSize(1,1)
         self.setScaledContents(True)
-        self.setPixmap(self.SelectedPixmap)
-        self.setPixmap(self.UnselectedPixmap)
-        
-        #self.setToolTip("Double click to move here")
-        
-        self.Selected = False
+        self.setPixmap(Globals.PiecePixmaps['{}Pixmap'.format(self.SelectedText)])
+
     
     def mouseDoubleClickEvent(self, event):
         self.SubmitMove.emit()
     
     def mouseReleaseEvent(self, event):
         self.ChangeSelected(event)
+
+    def ChangeImageOnClick(self, event):
+        self.setPixmap(Globals.PiecePixmaps['{}Pixmap'.format(self.SelectedText)])
+        if event != None:
+            self.PieceSelected.emit((self.Selected, type(self), self))
             
 class pieces():
     def __init__(self):
