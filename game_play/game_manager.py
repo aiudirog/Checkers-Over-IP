@@ -162,9 +162,9 @@ class GameManager(QObject):
     def send_moves(self):
         if len(self.curr_selection) < 2:
             return
-        self.on_execute_moves(self.curr_selection, self.curr_pieces_to_remove)
         if Gl.partnerIP != "Offline":
             Gl.Signals["SendMove"].emit(self.curr_selection, self.curr_pieces_to_remove)
+        self.on_execute_moves(self.curr_selection, self.curr_pieces_to_remove)
 
     def change_turn(self):
         if Gl.Current_Turn == 0:
