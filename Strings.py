@@ -1,7 +1,7 @@
-#Strings.py
+# Strings.py
 
-#Exactly as the filename implies, this file is for storing
-#all of the strings visible to the user.
+# Exactly as the filename implies, this file is for storing
+# all of the strings visible to the user.
 
 Title = 'Checkers Over IP'
 IPAddressRequest = '<font size="5">Your IP address is: {0}<BR><BR>Please share this with your partner and enter your <BR> name and your partner\'s IP address below.</font>'
@@ -21,7 +21,7 @@ SubmitMoveToolTip = 'Lock in your move and end your turn.'
 PlaceHolderName = "Your Name"
 PlaceHolderIPEnter = "IP Address: XXX.XXX.XXX.XXX"
 SendButtonToolTip = 'Send message to who you\'re playing with'
-MessegeBoxToolTip = "Use this text box to send messages to your opponent.\nPress Enter or click Send to send the message to your opponent.\nshift+Enter is a carrige return."
+MessageBoxToolTip = "Use this text box to send messages to your opponent.\nPress Enter or click Send to send the message to your opponent.\nshift+Enter is a carrige return."
 BeServer = "Host the server?"
 PlayOffline = "Play head to head offline?"
 CannotConnect = "The server which you are attempting to connect to cannot be reached, please contact your partner."
@@ -29,5 +29,5 @@ CannotConnectTitle = "Can't connect to server"
 Retrying = "Retrying"
 NoInternetTitle = "No internet connection..."
 NoInternetText = '<font size="5">Your computer is not connected to the internet.<BR>You can play offline by entering both of your<BR>names like so: <BR><BR><center>player1:player2</center></font>'
-
-
+PlayOfflineText = '<font size="5">You can play offline by entering both of your<BR>names like so: <BR><BR><center>player1:player2</center></font>'
+ConnectingToServer = '<font size="5">Connecting to server, please wait.</font>'
