@@ -1,2 +1,2 @@
 git pull
-start pythonw main.py
+start python main.py
