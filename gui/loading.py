@@ -58,7 +58,6 @@ class Loading(QDialog):
         if self.end_loading:
             super(Loading, self).close()
         else:
-            print(True)
             Gl.Signals["KILL"].emit()
             QApplication.processEvents()
 

@@ -33,9 +33,11 @@ class GetMovesFromServerThread(QThread):
                                                                                   self.pieces_to_remove)
             Gl.Signals["ExecuteMove"].emit(server_moves, server_pieces_to_remove)
         except socket.error as error:
-            print(error)
+            if Gl.SafeToPrint:
+                print(error)
         except http.client.CannotSendRequest as error:
-            print("http.client.CannotSendRequest:", error)
+            if Gl.SafeToPrint:
+                print("http.client.CannotSendRequest:", error)
 
 
 class CheckersServer(QThread):
@@ -104,17 +106,21 @@ class CheckersServer(QThread):
             try:
                 Gl.PartnerName = self.client.set_current_color_i_am(turn, Gl.Name)
             except socket.error as error:
-                print(error)
+                if Gl.SafeToPrint:
+                    print(error)
                 retry = True
             except http.client.CannotSendRequest as error:
-                print("http.client.CannotSendRequest:", error)
+                if Gl.SafeToPrint:
+                    print("http.client.CannotSendRequest:", error)
                 retry = True
             if retry:
                 for i in range(8):
-                    stdout.flush()
-                    stdout.write("\r" + Strings.Retrying + "." * i)
+                    if Gl.SafeToPrint:
+                        stdout.flush()
+                        stdout.write("\r" + Strings.Retrying + "." * i)
                     sleep(0.5)
-                print()
+                if Gl.SafeToPrint:
+                    print()
         Gl.Signals["endLoading"].emit()
         return True
 

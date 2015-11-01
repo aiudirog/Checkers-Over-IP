@@ -4,16 +4,21 @@ import urllib.error
 import socket
 from platform import system
 import getpass
+import sys
 
 # Identify graphics folder
 Graphics = os.path.join(os.getcwd(), "Graphics")
 
 # Identify OS and get application data folder
 System = system()
+SafeToPrint = True
 if System == "Linux":
     basePath = "/home/{}/.Checkers-Over-IP".format(getpass.getuser())
 elif System == "Windows":
     basePath = os.path.join(os.getenv('APPDATA'), ".Checkers-Over-IP")
+    if "pythonw" in sys.executable:
+        # Disable printing when using pythonw.exe on Windows
+        SafeToPrint = False
 else:
     basePath = "/home/{}/.Checkers-Over-IP".format(getpass.getuser())
 
@@ -27,7 +32,8 @@ try:
 except (socket.gaierror, urllib.error.URLError):
     myIP = False
     NoInternet = True
-    print("Could not open internet connection.")
+    if SafeToPrint:
+        print("Could not open internet connection.")
 
 partnerIP = None
 mainWindow = None
