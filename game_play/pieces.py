@@ -140,22 +140,3 @@ class Pieces(list):
             1110: black_king_last_selected_pixmap,
             1120: red_king_last_selected_pixmap
         }
-
-        """
-        Gl.PiecePixmaps = {
-            'BlackUnselectedPixmap': black_unselected_pixmap,
-            'RedUnselectedPixmap': red_unselected_pixmap,
-            'BlackSelectedPixmap': black_selected_pixmap,
-            'RedSelectedPixmap': red_selected_pixmap,
-            'BlackKingUnselectedPixmap': black_king_unselected_pixmap,
-            'RedKingUnselectedPixmap': red_king_unselected_pixmap,
-            'BlackKingSelectedPixmap': black_king_selected_pixmap,
-            'RedKingSelectedPixmap': red_king_selected_pixmap,
-            'SelectedPixmap': selected,
-            'UnselectedPixmap': clear,
-            'BlackLastSelectedPixmap': black_last_selected_pixmap,
-            'RedLastSelectedPixmap': red_last_selected_pixmap,
-            'BlackKingLastSelectedPixmap': black_king_last_selected_pixmap,
-            'RedKingLastSelectedPixmap': red_king_last_selected_pixmap
-        }
-        """
