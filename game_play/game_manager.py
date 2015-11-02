@@ -241,6 +241,7 @@ class GameManager(QObject):
     def reset(self):
         self.pieces.setup_new_game()
         Gl.ColorIAm = int(not Gl.ColorIAm)
+        Gl.Current_Turn = Gl.Black_Turn
         if Gl.Type == "Client" and Gl.Current_Turn != Gl.ColorIAm:
             Gl.Signals["ServerFirst"].emit()
         self.game_board.set_current_turn()
