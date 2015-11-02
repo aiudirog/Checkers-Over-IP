@@ -50,6 +50,15 @@ class GameManager(QObject):
 
         x, y = space.get_x(), space.get_y()
 
+        # Allow selecting a different first space.
+        if (x, y) not in self.curr_selection and len(self.curr_selection) > 1:
+            if self.is_possible_move(x, y, from_piece=True):
+                Gl.Signals["clearAllCheckers"].emit()
+                self.pieces[self.curr_selection[0][0]][self.curr_selection[0][1]].set_selected(True)
+                space.change_selected()
+                self.curr_selection = [self.curr_selection[0], (x, y)]
+                return
+
         # If the space was deselected, remove all following moves.
         if (x, y) in self.curr_selection:
             index = self.curr_selection.index((x, y))
@@ -83,13 +92,17 @@ class GameManager(QObject):
                 return
         self.send_moves()
 
-    def is_possible_move(self, move_x, move_y):
+    def is_possible_move(self, move_x, move_y, from_piece=False):
         color = self.curr_piece.get_color()
         red = self.curr_piece.red
         black = self.curr_piece.black
         is_king = self.curr_piece.is_king()
-        curr_x = self.curr_selection[-1][0]
-        curr_y = self.curr_selection[-1][1]
+        if from_piece:
+            curr_x = self.curr_piece.get_x()
+            curr_y = self.curr_piece.get_y()
+        else:
+            curr_x = self.curr_selection[-1][0]
+            curr_y = self.curr_selection[-1][1]
         removing_piece = False
 
         # Stay on board
@@ -126,9 +139,9 @@ class GameManager(QObject):
                 self.curr_pieces_to_remove.append((check_x, check_y))
                 removing_piece = True
         # Prevent moving move than once without taking a piece
-        if len(self.curr_pieces_to_remove) != 0 and not removing_piece:
+        if len(self.curr_pieces_to_remove) != 0 and not removing_piece and not from_piece:
             return False
-        if len(self.curr_selection) == 2 and not removing_piece:
+        if len(self.curr_selection) == 2 and not removing_piece and not from_piece:
             return False
         return True
 
