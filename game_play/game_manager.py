@@ -142,10 +142,9 @@ class GameManager(QObject):
         space = moves[-1]
         is_king = self.pieces[piece[0]][piece[1]].is_king()
         self.pieces[piece[0]][piece[1]].reset_state()
-
         self.pieces[space[0]][space[1]].set_color(color)
         self.pieces[space[0]][space[1]].set_king(is_king)
-        self.pieces[space[0]][space[1]].set_last_selected(True)
+
         if (color == Checker.black and space[1] == 8) or (color == Checker.red and space[1] == 1):
             self.pieces[space[0]][space[1]].set_king(True)
 
@@ -154,6 +153,10 @@ class GameManager(QObject):
 
         if not self.check_win_loss():
             self.change_turn()
+
+        Gl.Signals["clearAllCheckers"].emit()
+
+        self.pieces[space[0]][space[1]].set_last_selected(True)
 
         self.curr_selection = []
         self.curr_piece = None
