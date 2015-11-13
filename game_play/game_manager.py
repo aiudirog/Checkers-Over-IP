@@ -164,12 +164,12 @@ class GameManager(QObject):
         for removal in removals:
             self.pieces[removal[0]][removal[1]].reset_state()
 
-        if not self.check_win_loss():
-            self.change_turn()
-
         Gl.Signals["clearAllCheckers"].emit()
 
         self.pieces[space[0]][space[1]].set_last_selected(True)
+
+        if not self.check_win_loss():
+            self.change_turn()
 
         self.curr_selection = []
         self.curr_piece = None
@@ -245,11 +245,8 @@ class GameManager(QObject):
 
     # noinspection PyArgumentList
     def end_game(self, string):
-        message = QMessageBox(self.game_board.main_window)
-        message.setWindowTitle(Strings.GameOverTitle)
-        message.setText(string)
-        message.setTextFormat(Qt.RichText)
-        message.exec()
+        self.game_board.main_window.game_over_msg.setText(string)
+        self.game_board.main_window.game_over_msg.show()
         QApplication.processEvents()
         self.reset()
 

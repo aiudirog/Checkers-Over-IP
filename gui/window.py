@@ -43,6 +43,10 @@ class Window(QWidget):
         self.main_grid.setRowStretch(2, 9999)
         self.setLayout(self.main_grid)
 
+        self.game_over_msg = QMessageBox(self)
+        self.game_over_msg.setWindowTitle(Strings.GameOverTitle)
+        self.game_over_msg.setTextFormat(Qt.RichText)
+
         self.setGeometry(300, 100, 600, 600)
         self.setWindowTitle(Strings.Title)
         self.setWindowIcon(Gl.AppIcon)
