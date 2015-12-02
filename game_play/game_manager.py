@@ -234,10 +234,10 @@ class GameManager(QObject):
         elif checkers[Checker.black] == 0:
             self.end_game(Strings.RedWins)
             return True
-        elif moves[Checker.red] == 0:
+        elif moves[Checker.red] == 0 and Gl.Current_Turn != Gl.Red_Turn:
             self.end_game(Strings.BlackWinsNoMoreMoves)
             return True
-        elif moves[Checker.black] == 0:
+        elif moves[Checker.black] == 0 and Gl.Current_Turn != Gl.Black_Turn:
             self.end_game(Strings.RedWinsNoMoreMoves)
             return True
         else:
